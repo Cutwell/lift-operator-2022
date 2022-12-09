@@ -39,3 +39,11 @@ luac.out
 *.x86_64
 *.hex
 
+# ignore asset source files
+*.xcf
+
+# vscode helper files
+.vscode
+
+# build files
+build
