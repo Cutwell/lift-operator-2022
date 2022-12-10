@@ -41,4 +41,9 @@ do
     function love.timer.get(name)
         return timers[name]
     end
+
+    -- drop a named timer
+    function love.timer.drop(name)
+        timers[name] = nil
+    end
 end

@@ -21,5 +21,6 @@
 ### Attribution
 |Asset|Attribution|
 |:---:|:---:|
-|Elevator ding noise|[Inside Sounds](https://www.youtube.com/watch?v=AO7nOa50vOc)|
-|Elevator music|[jhaeka](https://joshuuu.itch.io/short-loopable-background-music)|
+|Passenger delivered sfx|[Inside Sounds](https://www.youtube.com/watch?v=AO7nOa50vOc)|
+|Elevator bmg|[jhaeka](https://joshuuu.itch.io/short-loopable-background-music)|
+|Powerdown sfx|[HALFTONE SFX](https://void1gaming.itch.io/halftone-sound-effects-pack-lite)|

@@ -3,11 +3,13 @@ local soundmanager = require("soundmanager")
 local timermanager = require("timermanager")
 local assetmanager = require("love-loader")
 
-local gameCanvas, cutsceneCanvas, bgm, sfx, assets, debug, gamestate, titleScreen, requestedFloors, floors, lift, newspaper, textBlink
+local gameCanvas, cutsceneCanvas, bgm, sfx, assets, debug, gamestate, titleScreen, requestedFloors, floors, lift, newspaper, textBlink, sfx
 assets = {}
+sfx = {}
+gamestate = 1
+debug = false
 
 function reset()
-    debug = false
     -- 1 = load assets, 2 = start screen, 3 = intro, 4 = game, 5 = game over
     gamestate = 1
     textBlink = false
@@ -73,14 +75,15 @@ function reset()
     lift.floorTimerMax = {0.2, 0.5, 0.5, 0.2} -- seconds to wait to open doors / load / unload / close doors
     lift.floorTimer = {0, 0, 0, 0}
     lift.passengers = {} -- passenger objects: {destination, model}
+
+    -- ensure bgm is playing
+    love.audio.play(bgm)
 end
 
 function love.load()
     math.randomseed(os.time())
     love.graphics.setDefaultFilter( 'nearest', 'nearest', 1 )
     love.graphics.setBackgroundColor(0, 0, 0)
-
-    reset() -- init values
 
     -- create 52x52 gameCanvas
     gameCanvas = love.graphics.newCanvas(52, 52)
@@ -117,8 +120,10 @@ function love.load()
     assetmanager.start(function()
         -- music
         bgm = love.audio.load("assets/music/Puzzles.wav", "stream", true) -- stream and loop background music
-        love.audio.play(bgm)
-        sfx = love.audio.load("assets/music/ding.mp3", "static")
+        sfx.ding = love.audio.load("assets/sfx/ding.mp3", "static")
+        sfx.powerdown = love.audio.load("assets/sfx/powerdown.wav", "static")
+
+        reset() -- init values
 
         gamestate = 2
     end)
@@ -343,6 +348,10 @@ function love.update(dt)
                     -- if timer < 0, flag for game end
                     if floors.timers[i][a] < 0 then
                         gamestate = 5   -- game over state
+                        -- pause bgm
+                        love.audio.stop(bgm)
+                        -- play game over sfx
+                        love.audio.play(sfx.powerdown)
                     end
                 end
             end
@@ -366,7 +375,7 @@ function love.update(dt)
 
                         if offloaded == true then
                             -- play sfx
-                            love.audio.play(sfx)
+                            love.audio.play(sfx.ding)
                         end
                     end
 
