@@ -14,9 +14,10 @@
 ### Controls
 * `left-click` to select a floor from the panel.
 * `F1` to toggle fullscreen.
-* `F3` toggle debug (FPS).
+* `F3` toggle debug (FPS), and enable gamestate switching with `1-6` keys.
 * `Escape` to quit.
-* `p` to pause background music.
+* `m` to mute all in-game sound.
+* `r` to reset the game.
 
 ### Attribution
 |Asset|Attribution|

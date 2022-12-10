@@ -3,9 +3,10 @@ local soundmanager = require("soundmanager")
 local timermanager = require("timermanager")
 local assetmanager = require("love-loader")
 
-local gameCanvas, cutsceneCanvas, bgm, sfx, assets, debug, gamestate, requestedFloors, floors, lift, textBlink
+local gameCanvas, cutsceneCanvas, bgm, sfx, assets, debug, gamestate, requestedFloors, floors, lift, textBlink, mute
 assets = {}
 sfx = {}
+mute = false
 gamestate = 1
 debug = false
 
@@ -19,6 +20,7 @@ function Reset()
     love.timer.create("titleTextBlink", 0.75, 2, true, function() textBlink = not textBlink end)
     love.timer.create("introTextBlink", 0.75, 3, true, function() textBlink = not textBlink end)
     love.timer.create("gameoverTextBlink", 0.75, 5, true, function() textBlink = not textBlink end)
+    love.timer.create("scoreTextBlink", 0.75, 6, true, function() textBlink = not textBlink end)
     love.timer.create("titleScreenLiftAnimation", 10.0, 2, false)
     love.timer.create("introCutscene", 2.0, 3, false)
     love.timer.create("gameoverCutscene", 2.0, 5, false)
@@ -77,13 +79,20 @@ function Reset()
     lift.passengers = {} -- passenger objects: {destination, model}
 
     -- ensure bgm is playing
-    love.audio.play(bgm)
+    if not mute then
+        love.audio.play(bgm)
+    end
 end
 
 function love.load()
     math.randomseed(os.time())
     love.graphics.setDefaultFilter( 'nearest', 'nearest', 1 )
     love.graphics.setBackgroundColor(0, 0, 0)
+
+    -- music (load before update loop starts)
+    bgm = love.audio.load("assets/music/Puzzles.wav", "stream", true) -- stream and loop background music
+    sfx.ding = love.audio.load("assets/sfx/ding.mp3", "static")
+    sfx.powerdown = love.audio.load("assets/sfx/powerdown.wav", "static")
 
     -- create 52x52 gameCanvas
     gameCanvas = love.graphics.newCanvas(52, 52)
@@ -96,10 +105,11 @@ function love.load()
     assetmanager.newImage(assets, "box", "assets/lift.png")
     assetmanager.newImage(assets, "scoreText", "assets/score.png")
 
-    -- intro and gameover screens
+    -- intro, gameover, score screens
     assetmanager.newImage(assets, "intro", "assets/intro.png")
     assetmanager.newImage(assets, "gameover", "assets/gameover.png")
     assetmanager.newImage(assets, "continueText", "assets/continue-text.png")
+    assetmanager.newImage(assets, "continueTextWhite", "assets/continue-text-white.png")
 
     -- title screen assets
     assetmanager.newImage(assets, "titleLift", "assets/title-lift.png")
@@ -118,11 +128,6 @@ function love.load()
 
     -- start lazy-loading
     assetmanager.start(function()
-        -- music
-        bgm = love.audio.load("assets/music/Puzzles.wav", "stream", true) -- stream and loop background music
-        sfx.ding = love.audio.load("assets/sfx/ding.mp3", "static")
-        sfx.powerdown = love.audio.load("assets/sfx/powerdown.wav", "static")
-
         Reset() -- init values
 
         gamestate = 2
@@ -133,7 +138,7 @@ function love.draw()
     if gamestate == 1 or gamestate == 4 then
         -- set gameCanvas as target
         love.graphics.setCanvas(gameCanvas)
-    elseif gamestate == 2 or gamestate == 3 or gamestate == 5 then
+    elseif gamestate == 2 or gamestate == 3 or gamestate == 5 or gamestate == 6 then
         -- set cutsceneCanvas as target
         love.graphics.setCanvas(cutsceneCanvas)
     end
@@ -294,6 +299,33 @@ function love.draw()
         if textBlink then
             love.graphics.draw(assets.continueText, 26, 90)
         end
+    elseif gamestate == 6 then
+        -- draw final score
+        -- draw score text (scaled to fit 104x104)
+        love.graphics.draw(assets.scoreText, 38, 27, 0, 2, 2)
+
+        -- translate lift.score to string
+        local score = tostring(lift.score)
+        -- if score is less than 3 digits, add 0s to the start
+        if #score < 3 then
+            for i = 1, 3-#score do
+                score = "0"..score
+            end
+        end
+        -- center score on x axis
+        local w = 8
+        local y = 39
+        local x = 104/2 - (#score*w)/2
+        -- iterate to len of score
+        for i = 1, #score do
+            -- draw the number (scaled to fit 104x104)
+            love.graphics.draw(assets.numbers[tonumber(string.sub(score, i, i))], x+((i-1)*w), y, 0, 2, 2)
+        end
+
+        -- blink continue text
+        if textBlink then
+            love.graphics.draw(assets.continueTextWhite, 26, 90)
+        end
     end
 
     love.graphics.setCanvas()
@@ -309,7 +341,7 @@ function love.draw()
         -- center the gameCanvas
         love.graphics.translate((love.graphics.getWidth() - (gameCanvas:getWidth() * scale_x)) / 2, (love.graphics.getHeight() - (gameCanvas:getHeight() * scale_y)) / 2)
         love.graphics.draw(gameCanvas, 0, 0, 0, scale_x, scale_y)
-    elseif gamestate == 2 or gamestate == 3 or gamestate == 5 then
+    elseif gamestate == 2 or gamestate == 3 or gamestate == 5 or gamestate == 6 then
         -- scale cutsceneCanvas to fit window and draw
         local scale_y, scale_x = love.graphics.getHeight() / cutsceneCanvas:getHeight(), love.graphics.getWidth() / cutsceneCanvas:getWidth()
         -- if scale_y is less than scale_x, use scale_y
@@ -333,9 +365,16 @@ function love.update(dt)
     love.audio.update()
     love.timer.update(dt, gamestate)
 
+    -- mute stop bgm if mute is true and bgm is playing
+    if mute and bgm:isPlaying() then
+        love.audio.stop(bgm)
+    -- unmute bgm if mute is false and bgm is not playing
+    elseif not mute and not bgm:isPlaying() then
+        love.audio.play(bgm)
+    end
+
     if gamestate == 1 then
         assetmanager.update()
-    elseif gamestate == 2 then
     elseif gamestate == 4 then
         -- iterate floor passengers
         for i, v in ipairs(floors.timers) do
@@ -348,10 +387,12 @@ function love.update(dt)
                     -- if timer < 0, flag for game end
                     if floors.timers[i][a] < 0 then
                         gamestate = 5   -- game over state
-                        -- pause bgm
-                        love.audio.stop(bgm)
-                        -- play game over sfx
-                        love.audio.play(sfx.powerdown)
+                        if not mute then
+                            -- pause bgm
+                            love.audio.stop(bgm)
+                            -- play game over sfx
+                            love.audio.play(sfx.powerdown)
+                        end
                     end
                 end
             end
@@ -373,7 +414,7 @@ function love.update(dt)
                     if i == 2 then
                         local offloaded = OffloadPassengers()
 
-                        if offloaded == true then
+                        if offloaded == true and not mute then
                             -- play sfx
                             love.audio.play(sfx.ding)
                         end
@@ -497,6 +538,8 @@ function love.mousepressed(x, y, button, istouch)
             end
         end
     elseif gamestate == 5 then
+        gamestate = 6
+    elseif gamestate == 6 then
         -- reset to title screen
         Reset()
         gamestate = 2
@@ -511,12 +554,25 @@ function love.keypressed(k)
     elseif k == "f3" then
         -- toggle debug
         debug = not debug
-    elseif k == "p" then
-        -- toggle mute background music
-        if bgm:isPlaying() then
-            love.audio.stop(bgm)
-        else
-            love.audio.play(bgm)
+    elseif k == "m" then
+        -- toggle mute
+        mute = not mute
+    elseif k == "r" then
+        -- reset to title screen
+        Reset()
+        gamestate = 2
+    end
+    if gamestate ~= 1 and debug then
+        if k == "2" then
+            gamestate = 2
+        elseif k == "3" then
+            gamestate = 3
+        elseif k == "4" then
+            gamestate = 4
+        elseif k == "5" then
+            gamestate = 5
+        elseif k == "6" then
+            gamestate = 6
         end
     end
 end
