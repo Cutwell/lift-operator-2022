@@ -30,3 +30,4 @@
 *Dev*
 * Build love.js: `npx love.js.cmd -c .\lift-operator-2022-js.love lift-operator-2022`
 * Run love.js build locally (from inside build root): `py -m http.server 8000`
+* Delete styling from love.js build (footer, resize loading canvas, background image, etc.)
