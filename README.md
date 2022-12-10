@@ -26,3 +26,7 @@
 |Passenger delivered sfx|[Inside Sounds](https://www.youtube.com/watch?v=AO7nOa50vOc)|
 |Elevator bmg|[jhaeka](https://joshuuu.itch.io/short-loopable-background-music)|
 |Powerdown sfx|[HALFTONE SFX](https://void1gaming.itch.io/halftone-sound-effects-pack-lite)|
+
+*Dev*
+* Build love.js: `npx love.js.cmd -c .\lift-operator-2022-js.love lift-operator-2022`
+* Run love.js build locally (from inside build root): `py -m http.server 8000`
