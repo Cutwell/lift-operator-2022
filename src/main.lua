@@ -3,13 +3,13 @@ local soundmanager = require("soundmanager")
 local timermanager = require("timermanager")
 local assetmanager = require("love-loader")
 
-local gameCanvas, cutsceneCanvas, bgm, sfx, assets, debug, gamestate, titleScreen, requestedFloors, floors, lift, newspaper, textBlink, sfx
+local gameCanvas, cutsceneCanvas, bgm, sfx, assets, debug, gamestate, requestedFloors, floors, lift, textBlink
 assets = {}
 sfx = {}
 gamestate = 1
 debug = false
 
-function reset()
+function Reset()
     -- 1 = load assets, 2 = start screen, 3 = intro, 4 = game, 5 = game over
     gamestate = 1
     textBlink = false
@@ -123,7 +123,7 @@ function love.load()
         sfx.ding = love.audio.load("assets/sfx/ding.mp3", "static")
         sfx.powerdown = love.audio.load("assets/sfx/powerdown.wav", "static")
 
-        reset() -- init values
+        Reset() -- init values
 
         gamestate = 2
     end)
@@ -498,7 +498,7 @@ function love.mousepressed(x, y, button, istouch)
         end
     elseif gamestate == 5 then
         -- reset to title screen
-        reset()
+        Reset()
         gamestate = 2
     end
 end
