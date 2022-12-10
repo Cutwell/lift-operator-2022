@@ -368,8 +368,8 @@ function love.update(dt)
     -- mute stop bgm if mute is true and bgm is playing
     if mute and bgm:isPlaying() then
         love.audio.stop(bgm)
-    -- unmute bgm if mute is false and bgm is not playing
-    elseif not mute and not bgm:isPlaying() then
+    -- unmute bgm if mute is false and bgm is not playing and gamestate is not game over
+    elseif not mute and not bgm:isPlaying() and gamestate ~= 5 or gamestate ~= 6 then
         love.audio.play(bgm)
     end
 
