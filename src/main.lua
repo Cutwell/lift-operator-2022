@@ -1,7 +1,6 @@
 -- import soundmanager
 local soundmanager = require("soundmanager")
 local timermanager = require("timermanager")
-local assetmanager = require("love-loader")
 
 local gameCanvas, cutsceneCanvas, bgm, sfx, assets, debug, gamestate, requestedFloors, floors, lift, textBlink, mute
 assets = {}
@@ -100,38 +99,35 @@ function love.load()
     -- create 104x104 title / intro / game over cutscene canvas
     cutsceneCanvas = love.graphics.newCanvas(104, 104)
 
-    assetmanager.newImage(assets, "building", "assets/building.png")
-    assetmanager.newImage(assets, "panel", "assets/panel.png")
-    assetmanager.newImage(assets, "box", "assets/lift.png")
-    assetmanager.newImage(assets, "scoreText", "assets/score.png")
+    assets.building = love.graphics.newImage("assets/building.png")
+    assets.panel = love.graphics.newImage("assets/panel.png")
+    assets.box = love.graphics.newImage("assets/lift.png")
+    assets.scoreText = love.graphics.newImage("assets/score.png")
 
     -- intro, gameover, score screens
-    assetmanager.newImage(assets, "intro", "assets/intro.png")
-    assetmanager.newImage(assets, "gameover", "assets/gameover.png")
-    assetmanager.newImage(assets, "continueText", "assets/continue-text.png")
-    assetmanager.newImage(assets, "continueTextWhite", "assets/continue-text-white.png")
+    assets.intro = love.graphics.newImage("assets/intro.png")
+    assets.gameover = love.graphics.newImage("assets/gameover.png")
+    assets.continueText = love.graphics.newImage("assets/continue-text.png")
+    assets.continueTextWhite = love.graphics.newImage("assets/continue-text-white.png")
 
     -- title screen assets
-    assetmanager.newImage(assets, "titleLift", "assets/title-lift.png")
-    assetmanager.newImage(assets, "titleText", "assets/title-text.png")
-    assetmanager.newImage(assets, "titleStartText", "assets/title-start-text.png")
+    assets.titleLift = love.graphics.newImage("assets/title-lift.png")
+    assets.titleText = love.graphics.newImage("assets/title-text.png")
+    assets.titleStartText = love.graphics.newImage("assets/title-start-text.png")
 
     assets.numbers = {}
     for i = 0, 9 do
-        assetmanager.newImage(assets.numbers, i, "assets/numbers/"..i..".png")
+        assets.numbers[i] = love.graphics.newImage("assets/numbers/"..i..".png")
     end
 
     assets.people = {}
     for i = 1, 4 do
-        assetmanager.newImage(assets.people, i, "assets/people/"..i..".png")
+        assets.people[i] = love.graphics.newImage("assets/people/"..i..".png")
     end
 
-    -- start lazy-loading
-    assetmanager.start(function()
-        Reset() -- init values
+    Reset() -- init values
 
-        gamestate = 2
-    end)
+    gamestate = 2
 end
 
 function love.draw()
@@ -146,21 +142,7 @@ function love.draw()
     -- clear canvas
     love.graphics.clear()
 
-    -- if not finished loading, draw loading bar
-    if gamestate == 1 then
-        local percent = 0
-        if assetmanager.resourceCount ~= 0 then
-            percent = assetmanager.loadedCount / assetmanager.resourceCount
-        end
-        percent = math.floor(percent*100)
-
-        -- set color to white
-        love.graphics.setColor(1,1,1)
-        -- draw progress bar box in middle of screen
-        love.graphics.rectangle("line", (52/2)-10, (52/2)-2, 20,5)
-        -- draw progress bar
-        love.graphics.rectangle("fill", (52/2)-8, 52/2, 16*percent/100,1)
-    elseif gamestate == 2 then
+    if gamestate == 2 then
         -- animate raising lift
         local timer = love.timer.get("titleScreenLiftAnimation")
         local animationTimer, animationTimerMax = timer.curr, timer.max
@@ -373,9 +355,7 @@ function love.update(dt)
         love.audio.play(bgm)
     end
 
-    if gamestate == 1 then
-        assetmanager.update()
-    elseif gamestate == 4 then
+    if gamestate == 4 then
         -- iterate floor passengers
         for i, v in ipairs(floors.timers) do
             if #v > 0 then  -- if passengers waiting
