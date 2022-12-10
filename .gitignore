@@ -47,3 +47,9 @@ luac.out
 
 # build files
 build
+
+# game screenshots for dev or release
+screenshots
+
+# copy of README.md in /src/ for release
+src/README.md
