@@ -30,4 +30,42 @@
 *Dev*
 * Build love.js: `npx love.js.cmd -c .\lift-operator-2022-js.love lift-operator-2022`
 * Run love.js build locally (from inside build root): `py -m http.server 8000`
-* Delete styling from love.js build (footer, resize loading canvas, background image, etc.)
+* Delete elements from love.js build (footer, background image, etc.)
+* Change canvas HTML to fit 512x512
+```html
+<center>
+    <div>
+    <canvas id="loadingCanvas" oncontextmenu="event.preventDefault()" width="512" height="512"></canvas>
+    <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+    </div>
+</center>
+```
+* Add dynamic styling to love.css
+```css
+/* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+#canvas {
+    height: 512px;
+    width: 512px;
+    padding-right: 0;
+    display: block;
+    border: 0px none;
+    visibility: hidden;
+}
+
+#loadingCanvas {
+    height: 512px;
+    width: 512px;
+}
+
+/* if screen width is less than 512, scale canvas to fit */
+@media screen and (max-width: 512px) {
+    #canvas {
+        width: 100%;
+        height: auto;
+    }
+    #loadingCanvas {
+        width: 100%;
+        height: auto;
+    }
+}
+```
